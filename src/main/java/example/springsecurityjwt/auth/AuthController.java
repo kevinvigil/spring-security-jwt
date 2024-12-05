@@ -25,7 +25,7 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping("auth/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest userLogin) throws IllegalAccessException{
         Authentication authentication =
                 authenticationManager.authenticate(
@@ -36,9 +36,10 @@ public class AuthController {
                 );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        AuthUser authUser = (AuthUser) authentication.getPrincipal();
+        authentication.getPrincipal();
 
         log.info("Token requested for user :{}", authentication.getAuthorities());
+
         String token = authService.generateToken(authentication);
 
         Response response = new Response("User logged in successfully", token);

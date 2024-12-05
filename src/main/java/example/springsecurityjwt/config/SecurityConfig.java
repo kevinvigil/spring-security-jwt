@@ -7,12 +7,15 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import example.springsecurityjwt.auth.JpaUserDetailsService;
+import example.springsecurityjwt.entity.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,13 +25,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -55,16 +62,47 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.GET, "/user").hasRole(Role.USER.name());
+                    auth.requestMatchers(HttpMethod.GET, "/admin").hasRole(Role.ADMIN.name());
+                    auth.requestMatchers("/all").permitAll();
                     auth.requestMatchers("/error/**").permitAll();
                     auth.requestMatchers("/auth/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/user").authenticated();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt)-> jwt.decoder(jwtDecoder())))
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt)-> jwt
+                                        .decoder(jwtDecoder())
+                                        .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        ))
                 .userDetailsService(userDetailsService)
                 .httpBasic(Customizer.withDefaults())
                 .build();
+    }
+
+    private Converter<Jwt,? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+            List<String> roles = jwt.getClaimAsStringList("role");
+            if (roles != null) {
+                for (String role : roles) {
+                    authorities.add(new SimpleGrantedAuthority(role));
+                }
+            }
+
+            List<String> scopes = jwt.getClaimAsStringList("scope");
+            if (scopes != null) {
+                for (String scope : scopes) {
+                    authorities.add(new SimpleGrantedAuthority("SCOPE_" + scope));
+                }
+            }
+
+            return authorities;
+        });
+
+        return converter;
     }
 
     @Bean

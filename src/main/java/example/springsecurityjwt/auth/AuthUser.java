@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
 @Getter
-public class AuthUser extends User implements UserDetails {
+public class AuthUser implements UserDetails, GrantedAuthority {
 
     private final User user;
 
@@ -20,6 +20,16 @@ public class AuthUser extends User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
 
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUsername();
     }
 
     @Override
@@ -40,5 +50,10 @@ public class AuthUser extends User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getAuthority() {
+        return user.getRole().name().toUpperCase();
     }
 }

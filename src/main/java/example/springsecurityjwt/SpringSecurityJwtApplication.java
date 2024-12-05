@@ -1,6 +1,7 @@
 package example.springsecurityjwt;
 
 import example.springsecurityjwt.config.RsaKeyConfigProperties;
+import example.springsecurityjwt.entity.Role;
 import example.springsecurityjwt.entity.User;
 import example.springsecurityjwt.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -22,10 +23,18 @@ public class SpringSecurityJwtApplication {
     public CommandLineRunner initializeUser(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         return args -> {
             User user = new User();
-            user.setUsername("exampleuser");
+            user.setUsername("user");
             user.setEmail("example@gmail.com");
-            user.setPassword(passwordEncoder.encode("examplepassword"));
+            user.setRole(Role.USER);
+            user.setPassword(passwordEncoder.encode("password"));
             userRepository.save(user);
+
+            User user2 = new User();
+            user2.setUsername("user2");
+            user2.setEmail("example@gmail2.com");
+            user2.setRole(Role.ADMIN);
+            user2.setPassword(passwordEncoder.encode("password"));
+            userRepository.save(user2);
         };
     }
 

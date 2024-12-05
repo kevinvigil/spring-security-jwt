@@ -34,6 +34,10 @@ public class User {
     @JsonIgnore
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     public User(String userId, @NonNull String username, @NonNull String email, @NonNull String password) {
         this.userId = userId;
         this.username = username;
