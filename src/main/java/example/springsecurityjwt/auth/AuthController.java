@@ -20,10 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
+    private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
+
     @Autowired
-    private AuthService authService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager) {
+        this.authService = authService;
+        this.authenticationManager = authenticationManager;
+    }
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest userLogin) throws IllegalAccessException{

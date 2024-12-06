@@ -14,13 +14,31 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
+/**
+ * A service responsible for generating JWT tokens for authenticated users.
+ *
+ * <ul>
+ *     <li>Uses a `JwtEncoder` to create signed JWT tokens.</li>
+ *     <li>Includes claims such as issuer, issued date, expiration, subject, and user roles.</li>
+ * </ul>
+ */
 @Service
 public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    @Autowired
-    private JwtEncoder jwtEncoder;
+    private final JwtEncoder jwtEncoder;
 
+    @Autowired
+    public AuthService(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
+    }
+
+    /**
+     * Generates a JWT token for a given authenticated user.
+     *
+     * @param authentication the authenticated user details.
+     * @return a signed JWT token string.
+     */
     public String generateToken(Authentication authentication) {
         Instant now = Instant.now();
 

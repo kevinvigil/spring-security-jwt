@@ -13,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableConfigurationProperties(RsaKeyConfigProperties.class)
 @SpringBootApplication
-public class SpringSecurityJwtApplication {
+public class SpringSecurityJwtApplication{
 
     public static void main(String[] args) {
         SpringApplication.run(SpringSecurityJwtApplication.class, args);

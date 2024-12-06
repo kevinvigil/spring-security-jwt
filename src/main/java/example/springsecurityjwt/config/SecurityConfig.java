@@ -37,16 +37,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Security configuration class for the Spring Boot application.
+ * <p>
+ * This configuration enables OAuth2-based resource server functionality with JWT (JSON Web Tokens)
+ * for authentication and authorization. It integrates roles and scopes from the token claims
+ * to provide granular control over access.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
-    @Autowired
     private RsaKeyConfigProperties rsaKeyConfigProperties;
-    @Autowired
     private JpaUserDetailsService userDetailsService;
+
+    @Autowired
+    public void setRsaKeyConfigProperties(RsaKeyConfigProperties rsaKeyConfigProperties, JpaUserDetailsService userDetailsService) {
+        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -56,6 +67,21 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
+    /**
+     * Configures the Spring Security filter chain.
+     *
+     * <p>Features enabled:
+     * <ul>
+     *   <li>Disables CSRF (not needed for APIs).</li>
+     *   <li>Configures stateless session management.</li>
+     *   <li>Defines endpoint-level authorization rules based on roles.</li>
+     *   <li>Configures JWT decoding and authentication.</li>
+     * </ul>
+     *
+     * @param http the HttpSecurity object to configure.
+     * @return the configured SecurityFilterChain.
+     * @throws Exception in case of misconfiguration.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -79,6 +105,11 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Converts JWT claims into Spring Security authorities based on roles and scopes.
+     *
+     * @return un JwtAuthenticationConverter configurado.
+     */
     private Converter<Jwt,? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
