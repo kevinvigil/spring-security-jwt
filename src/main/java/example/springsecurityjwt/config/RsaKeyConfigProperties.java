@@ -24,7 +24,7 @@ import java.security.interfaces.RSAPublicKey;
  * <p>This component ensures that the keys are properly loaded into the application for use in
  * Spring Security's JWT-based authentication process.
  *
- * <p>For detailed setup instructions, refer to the `README.md` file in the project repository.
+ * <p>For detailed setup instructions, refer to the <a href="https://github.com/kevinvigil/spring-security-jwt/blob/main/README.md">`README.md`</a> file in the project repository.
  */
 @ConfigurationProperties(prefix = "rsa")
 public record RsaKeyConfigProperties(RSAPublicKey publicKey, RSAPrivateKey privateKey ) {}
